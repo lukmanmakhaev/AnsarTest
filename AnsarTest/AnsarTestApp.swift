@@ -21,6 +21,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct AnsarTestApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var authViewModel = AuthViewModel()
+    @StateObject var adminViewModel = AdminViewModel()
     
     var body: some Scene {
         WindowGroup {
@@ -32,8 +33,9 @@ struct AnsarTestApp: App {
                 case .authenticating:
                     ProgressView()
                 case .authenticated:
-                    ContentView()
+                    MainView()
                         .environmentObject(authViewModel)
+                        .environmentObject(adminViewModel)
                 }
             }
         }

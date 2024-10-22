@@ -25,12 +25,11 @@ enum AuthenticationFlow {
 class AuthViewModel: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
-    @Published var authenticationState: AuthenticationState = .unauthenticated
+    @Published var authenticationState: AuthenticationState = .authenticating
     @Published var errorMessage: String?
     
     @Published var isLoading: Bool = true
     @Published var flow: AuthenticationFlow = .login
-    
     
     @Published var name: String = ""
     @Published var email: String = ""
@@ -82,7 +81,7 @@ class AuthViewModel: ObservableObject {
         do  {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.userSession = result.user
-            let user = User(id: userSession?.uid ?? "", name: self.name, email: self.email, isAdmin: false, userType: self.userType.rawValue)
+            let user = User(id: userSession?.uid ?? "", name: self.name, email: self.email, bio: "", groupIds: [], userType: self.userType)
             let encodedUser = try Firestore.Encoder().encode(user)
             try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser)
             emailVerification()

@@ -1,5 +1,5 @@
 //
-//  SignInView.swift
+//  SignUpView.swift
 //  AnsarTest
 //
 //  Created by Lukman Makhaev on 17.10.2024.
@@ -8,27 +8,52 @@
 import SwiftUI
 
 private enum FocusableField: Hashable {
+    case name
     case email
     case password
 }
 
-struct SignInView: View {
+struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @FocusState private var focus: FocusableField?
     @Environment(\.dismiss) var dismiss
     
-    @FocusState private var focus: FocusableField?
-    @FocusState private var isFocused: Bool
-    
-    private func signInWithEmailPassword() {
+    private func signUpWithEmailPassword() {
         Task {
-            if await authViewModel.signInWithEmailPassword() == true {
+            if await authViewModel.signUpWithEmailPassword() == true {
                 dismiss()
             }
         }
     }
     
     var body: some View {
+        
         VStack (spacing: 16) {
+            
+            Image("logo")
+                .resizable()
+                .frame(width: 150, height: 150)
+                .padding(.top, 12)
+            
+            VStack (alignment: .leading, spacing: 0) {
+                
+                Text("Name")
+                    .fontWeight(.semibold)
+                    .padding(.leading, 6)
+                
+                TextField("John Doe", text: $authViewModel.name)
+                    .textFieldStyle(CustomTextFieldStyle(backgroundColor: "itemColor"))
+                    .focused($focus, equals: .name)
+                    .submitLabel(.next)
+                    .onSubmit {
+                        self.focus = .email
+                    }
+                    .padding(.top, 12)
+                    .shadow(color: Color.black.opacity(0.15), radius: 2)
+                
+            }
+            .padding(.top, 50)
+            
             VStack (alignment: .leading, spacing: 0) {
                 
                 Text("Email")
@@ -37,13 +62,12 @@ struct SignInView: View {
                 
                 TextField("xyz@gmail.соm", text: $authViewModel.email)
                     .textFieldStyle(CustomTextFieldStyle(backgroundColor: "itemColor"))
-                    .textInputAutocapitalization(.never)
-                    .padding(.top, 12)
                     .focused($focus, equals: .email)
                     .submitLabel(.next)
                     .onSubmit {
                         self.focus = .password
                     }
+                    .padding(.top, 12)
                     .shadow(color: Color.black.opacity(0.15), radius: 2)
                 
             }
@@ -62,7 +86,7 @@ struct SignInView: View {
                                 .focused($focus, equals: .password)
                                 .submitLabel(.go)
                                 .onSubmit {
-                                    signInWithEmailPassword()
+                                    signUpWithEmailPassword()
                                 }
                         } else {
                             TextField("Your password", text: $authViewModel.password)
@@ -71,7 +95,7 @@ struct SignInView: View {
                                 .focused($focus, equals: .password)
                                 .submitLabel(.go)
                                 .onSubmit {
-                                    signInWithEmailPassword()
+                                    signUpWithEmailPassword()
                                 }
                         }
                     }
@@ -92,38 +116,35 @@ struct SignInView: View {
                 
             }
             
+            
             Button(action: {
-                signInWithEmailPassword()
+                signUpWithEmailPassword()
             }) {
-                Text("Sign in")
+                Text("Sign Up")
                     .frame(maxWidth: .infinity)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.blue)
+                    .background(.accent)
                     .cornerRadius(15)
+                    .fontWeight(.semibold)
                 
             }
             .padding(.top)
-            
-            Button(action: {
-                // add reset function
-            }) {
-                Text("Забыли пароль?")
-                    .font(.system(size: 15))
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.secondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 8)
+
+            if let errorMessage = authViewModel.errorMessage {
+                Text(errorMessage)
+                    .foregroundColor(.red)
+                    .padding()
             }
             
             Spacer()
             
             HStack {
-                Text("Dont have cccount")
+                Text("Already have an account?")
                 Button(action: { authViewModel.switchFlow() }) {
-                    Text("Sign up")
+                    Text("Sign in")
                         .fontWeight(.semibold)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.accent)
                 }
             }
         }
@@ -131,7 +152,8 @@ struct SignInView: View {
     }
 }
 
+
 #Preview {
-    SignInView()
+    SignUpView()
         .environmentObject(AuthViewModel())
 }
